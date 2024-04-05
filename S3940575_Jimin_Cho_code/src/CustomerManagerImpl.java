@@ -1,73 +1,92 @@
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.nio.file.*;
+import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class CustomerManagerImpl implements CustomerManager {
-    private List<Customer> customers = new ArrayList<>();
-    private static final String DATA_FILE = "customers.dat";
+    private Map<String, Customer> customers = new HashMap<>();
+    private static final String CUSTOMER_DIR = "./customers/";
 
     public CustomerManagerImpl() {
+        new File(CUSTOMER_DIR).mkdirs();
         loadCustomers();
     }
 
     @Override
-    public void addCustomer(Customer customer) {
-        customers.add(customer);
-        saveCustomers();
-    }
-
-    @Override
-    public Customer updateCustomer(String id, String newFullName) {
-        for (Customer customer : customers) {
-            if (customer.getId().equals(id)) {
-                customer.setFullName(newFullName);
-                saveCustomers();
-                return customer;
+    public boolean addCustomer(Customer customer) {
+        String customerId = "c-" + ThreadLocalRandom.current().nextInt(1000000, 10000000);
+        customer.setId(customerId);
+        if (customer.getDependents().isEmpty()) {
+            customer.setIsPolicyHolder(true);
+        } else {
+            for (Dependent dependent : customer.getDependents()) {
+                dependent.setPolicyOwnerId(customerId);
             }
+            customer.setIsPolicyHolder(false);
         }
-        return null;
-    }
-
-    @Override
-    public boolean deleteCustomer(String id) {
-        boolean removed = customers.removeIf(customer -> customer.getId().equals(id));
-        if (removed) {
-            saveCustomers();
-        }
-        return removed;
+        customers.put(customerId, customer);
+        saveCustomer(customer);
+        return true;
     }
 
     @Override
     public Customer getCustomerById(String id) {
-        return customers.stream().filter(customer -> customer.getId().equals(id)).findFirst().orElse(null);
+        return customers.get(id);
     }
 
     @Override
     public List<Customer> getAllCustomers() {
-        return new ArrayList<>(customers);
+        return new ArrayList<>(customers.values());
+    }
+
+    @Override
+    public boolean deleteCustomer(String id) {
+        Customer customer = customers.remove(id);
+        if (customer != null) {
+            try {
+                Files.deleteIfExists(Paths.get(CUSTOMER_DIR + customer.getId() + ".txt"));
+                return true;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean updateCustomer(Customer customer) {
+        if (customers.containsKey(customer.getId())) {
+            customers.put(customer.getId(), customer);
+            saveCustomer(customer); // 변경된 고객 정보를 파일에 다시 저장
+            return true;
+        }
+        return false;
     }
 
     @Override
     public void saveCustomers() {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(DATA_FILE))) {
-            oos.writeObject(customers);
-        } catch (IOException e) {
-            System.err.println("Error saving customers: " + e.getMessage());
-        }
+        customers.values().forEach(this::saveCustomer);
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public void loadCustomers() {
-        File file = new File(DATA_FILE);
-        if (file.exists()) {
+        File folder = new File(CUSTOMER_DIR);
+        File[] files = folder.listFiles((dir, name) -> name.endsWith(".txt"));
+        for (File file : files) {
             try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-                customers = (List<Customer>) ois.readObject();
+                Customer customer = (Customer) ois.readObject();
+                customers.put(customer.getId(), customer);
             } catch (IOException | ClassNotFoundException e) {
-                System.err.println("Error loading customers: " + e.getMessage());
+                e.printStackTrace();
             }
         }
     }
-}
 
+    private void saveCustomer(Customer customer) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(CUSTOMER_DIR + customer.getId() + ".txt"))) {
+            oos.writeObject(customer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}

@@ -1,22 +1,24 @@
 import java.io.Serializable;
-import java.util.UUID;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Customer implements Serializable {
     private String id;
     private String fullName;
+    private boolean isPolicyHolder;
+    private List<Dependent> dependents;
 
-    public Customer(String fullName) {
-        // UUID를 사용하여 랜덤하고 고유한 ID 생성
-        this.id = UUID.randomUUID().toString();
+    public Customer(String fullName, boolean isPolicyHolder) {
         this.fullName = fullName;
+        this.isPolicyHolder = isPolicyHolder;
+        this.dependents = new ArrayList<>();
     }
 
-    // fullName 속성을 업데이트하는 메소드 추가
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
+    public void addDependent(Dependent dependent) {
+        this.dependents.add(dependent);
     }
 
-    // Getters and Setters
+    // Getters
     public String getId() {
         return id;
     }
@@ -25,8 +27,34 @@ public class Customer implements Serializable {
         return fullName;
     }
 
+    public boolean getIsPolicyHolder() {
+        return isPolicyHolder;
+    }
+
+    public List<Dependent> getDependents() {
+        return dependents;
+    }
+
+    // Setters
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
+    public void setIsPolicyHolder(boolean isPolicyHolder) {
+        this.isPolicyHolder = isPolicyHolder;
+    }
+
     @Override
     public String toString() {
-        return "Customer{" + "id='" + id + '\'' + ", fullName='" + fullName + '\'' + '}';
+        return "Customer{" +
+                "id='" + id + '\'' +
+                ", fullName='" + fullName + '\'' +
+                ", isPolicyHolder=" + isPolicyHolder +
+                ", dependents=" + dependents +
+                '}';
     }
 }

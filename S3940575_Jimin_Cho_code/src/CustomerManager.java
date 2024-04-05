@@ -1,11 +1,11 @@
 import java.util.List;
 
 public interface CustomerManager {
-    void addCustomer(Customer customer);
-    Customer updateCustomer(String id, String newFullName);
-    boolean deleteCustomer(String id);
+    boolean addCustomer(Customer customer);
     Customer getCustomerById(String id);
     List<Customer> getAllCustomers();
-    void saveCustomers(); // 고객 정보를 파일에 저장
-    void loadCustomers(); // 파일에서 고객 정보를 불러옴
+    boolean deleteCustomer(String id);
+    void saveCustomers();
+    void loadCustomers();
+    boolean updateCustomer(Customer customer); // 업데이트 메서드 추가
 }
