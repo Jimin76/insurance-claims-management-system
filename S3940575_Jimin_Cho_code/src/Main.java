@@ -1,21 +1,66 @@
 import java.util.Scanner;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.InputMismatchException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.FileInputStream;
+import java.io.File;
+import java.lang.ClassNotFoundException;
 
 public class Main {
     private static final Scanner scanner = new Scanner(System.in);
     private static final CustomerManager customerManager = new CustomerManagerImpl();
+    private static final String INSURANCE_CARD_DIR = "./insurance cards/";
 
     public static void main(String[] args) {
         boolean exit = false;
-
         while (!exit) {
+            try {
+                System.out.println("\nWelcome to Insurance Claims Management System");
+                System.out.println("Please select options above:");
+                System.out.println("1. Customer Management System");
+                System.out.println("2. View all Insurance Cards");
+                System.out.println("3. Claim Management System (Under development)");
+                System.out.println("4. Exit");
+                System.out.print("Enter choice: ");
+
+                int mainChoice = scanner.nextInt();
+                scanner.nextLine(); // Consume newline
+
+                switch (mainChoice) {
+                    case 1:
+                        manageCustomers();
+                        break;
+                    case 2:
+                        viewAllInsuranceCards();
+                        break;
+                    case 3:
+                        System.out.println("Claim Management System is under development.");
+                        break;
+                    case 4:
+                        exit = true;
+                        System.out.println("Exiting...");
+                        break;
+                    default:
+                        System.out.println("Invalid choice. Please enter 1-4.");
+                }
+            } catch (InputMismatchException ime) {
+                System.out.println("Invalid input. Please enter a number.");
+                scanner.nextLine(); // 입력 스트림을 지우고 다시 사용자 입력을 받을 준비를 함
+            }
+        }
+    }
+
+    private static void manageCustomers() {
+        boolean back = false;
+        while (!back) {
             System.out.println("\n--- Customer Management System ---");
             System.out.println("1. Add Customer");
             System.out.println("2. View Customer");
-            System.out.println("3. Delete Customer");
-            System.out.println("4. List All Customers");
-            System.out.println("5. Exit");
-            System.out.println("6. Update Customer");
+            System.out.println("3. Update Customer");
+            System.out.println("4. Delete Customer");
+            System.out.println("5. List All Customers");
+            System.out.println("6. Back");
             System.out.print("Enter choice: ");
 
             int choice = scanner.nextInt();
@@ -29,21 +74,41 @@ public class Main {
                     viewCustomer();
                     break;
                 case 3:
-                    deleteCustomer();
-                    break;
-                case 4:
-                    listAllCustomers();
-                    break;
-                case 5:
-                    exit = true;
-                    System.out.println("Exiting...");
-                    break;
-                case 6:
                     updateCustomer();
                     break;
+                case 4:
+                    deleteCustomer();
+                    break;
+                case 5:
+                    listAllCustomers();
+                    break;
+                case 6:
+                    back = true;
+                    break;
+
                 default:
-                    System.out.println("Invalid choice. Please enter 1-5.");
+                    System.out.println("Invalid choice. Please enter 1-6.");
             }
+        }
+    }
+
+    private static void viewAllInsuranceCards() {
+        File folder = new File(INSURANCE_CARD_DIR);
+        File[] listOfFiles = folder.listFiles();
+        if (listOfFiles != null) {
+            for (File file : listOfFiles) {
+                if (file.isFile()) {
+                    System.out.println("\nCard Details:");
+                    try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+                        InsuranceCard card = (InsuranceCard) ois.readObject();
+                        System.out.println(card);
+                    } catch (IOException | ClassNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        } else {
+            System.out.println("No insurance cards found.");
         }
     }
 
