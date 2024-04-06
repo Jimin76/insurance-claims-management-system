@@ -6,10 +6,11 @@ import java.io.ObjectInputStream;
 import java.io.FileInputStream;
 import java.io.File;
 import java.lang.ClassNotFoundException;
-
+import java.util.Date;
 public class Main {
     private static final Scanner scanner = new Scanner(System.in);
     private static final CustomerManager customerManager = new CustomerManagerImpl();
+    private static final ClaimProcessManager claimProcessManager = new ClaimProcessManagerImpl(); // 클레임 관리자 인스턴스 추가
     private static final String INSURANCE_CARD_DIR = "./insurance cards/";
 
     public static void main(String[] args) {
@@ -20,7 +21,7 @@ public class Main {
                 System.out.println("Please select options above:");
                 System.out.println("1. Customer Management System");
                 System.out.println("2. View all Insurance Cards");
-                System.out.println("3. Claim Management System (Under development)");
+                System.out.println("3. Claim Management System"); // "Under development" 제거
                 System.out.println("4. Exit");
                 System.out.print("Enter choice: ");
 
@@ -35,7 +36,7 @@ public class Main {
                         viewAllInsuranceCards();
                         break;
                     case 3:
-                        System.out.println("Claim Management System is under development.");
+                        manageClaims(); // 클레임 관리 시스템 호출
                         break;
                     case 4:
                         exit = true;
@@ -214,7 +215,78 @@ public class Main {
             System.out.println("Failed to update customer.");
         }
     }
+
+    private static void manageClaims() {
+        while (true) {
+            System.out.println("\n--- Claim Management System ---");
+            System.out.println("1. Add Claim");
+            System.out.println("2. View Claim");
+            System.out.println("3. Update Claim");
+            System.out.println("4. Delete Claim");
+            System.out.println("5. List All Claims");
+            System.out.println("6. Back");
+            System.out.print("Enter choice: ");
+
+            int choice = scanner.nextInt();
+            scanner.nextLine(); // Consume newline
+
+            switch (choice) {
+                case 1:
+                    addClaim();
+                    break;
+                case 2:
+                    viewClaim();
+                    break;
+                case 3:
+                    updateClaim();
+                    break;
+                case 4:
+                    deleteClaim();
+                    break;
+                case 5:
+                    listAllClaims();
+                    break;
+                case 6:
+                    return; // Back to main menu
+                default:
+                    System.out.println("Invalid choice. Please enter 1-6.");
+            }
+        }
+    }
+
+    // 클레임 추가 로직
+    private static void addClaim() {
+        System.out.println("Adding a new claim...");
+        // Implementation goes here
+    }
+
+    // 클레임 조회 로직
+    private static void viewClaim() {
+        System.out.println("Viewing a claim...");
+        // Implementation goes here
+    }
+
+    // 클레임 업데이트 로직
+    private static void updateClaim() {
+        System.out.println("Updating a claim...");
+        // Implementation goes here
+    }
+
+    // 클레임 삭제 로직
+    private static void deleteClaim() {
+        System.out.println("Deleting a claim...");
+        // Implementation goes here
+    }
+
+    // 모든 클레임 리스트 로직
+    private static void listAllClaims() {
+        System.out.println("Listing all claims...");
+        // Implementation goes here
+    }
+
+    // 기타 필요한 메소드...
 }
+
 
 
 
