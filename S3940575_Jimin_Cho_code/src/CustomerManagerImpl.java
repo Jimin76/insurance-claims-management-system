@@ -25,17 +25,19 @@ public class CustomerManagerImpl implements CustomerManager {
         customers.put(customerId, customer);
         saveCustomer(customer);
 
-        createAndSaveInsuranceCard(customerId, customerId, true); // Policy holder 자신을 위한 카드
+        createAndSaveInsuranceCard(customerId, customerId, true, customer.getFullName()); // Policy holder 자신을 위한 카드
         for (Dependent dependent : customer.getDependents()) {
-            createAndSaveInsuranceCard(dependent.getId(), customerId, false); // 각 Dependent를 위한 카드
+            // Dependent의 fullName을 cardHolderName으로 전달합니다.
+            createAndSaveInsuranceCard(dependent.getId(), customerId, false, dependent.getFullName()); // 각 Dependent를 위한 카드
         }
         return true;
     }
 
-    private void createAndSaveInsuranceCard(String cardHolderId, String policyOwnerId, boolean isPolicyHolder) {
+    private void createAndSaveInsuranceCard(String cardHolderId, String policyOwnerId, boolean isPolicyHolder, String cardHolderName) {
         String cardNumber = generateRandomCardNumber();
         Date expirationDate = generateCardExpirationDate();
-        InsuranceCard card = new InsuranceCard(cardNumber, cardHolderId, policyOwnerId, expirationDate);
+        // cardHolderName 파라미터를 생성자 호출에 추가합니다.
+        InsuranceCard card = new InsuranceCard(cardNumber, cardHolderId, policyOwnerId, expirationDate, cardHolderName);
         saveInsuranceCard(card);
     }
 
@@ -105,20 +107,21 @@ public class CustomerManagerImpl implements CustomerManager {
         if (customers.containsKey(customer.getId())) {
             Customer existingCustomer = customers.get(customer.getId());
 
-            // Step 1: 기존 인슈어런스 카드 삭제
+            // 기존 인슈어런스 카드 삭제
             deleteInsuranceCard(existingCustomer.getId()); // 고객 자신의 인슈어런스 카드 삭제
             for (Dependent dependent : existingCustomer.getDependents()) {
                 deleteInsuranceCard(dependent.getId()); // 기존 디펜던트의 인슈어런스 카드 삭제
             }
 
-            // Step 2: 고객 정보 업데이트
+            // 고객 정보 업데이트
             customers.put(customer.getId(), customer);
             saveCustomer(customer); // 변경된 고객 정보를 파일에 다시 저장
 
-            // Step 3: 새로운 인슈어런스 카드 생성
-            createAndSaveInsuranceCard(customer.getId(), customer.getId(), true); // 고객 자신을 위한 새 인슈어런스 카드
+            // 새로운 인슈어런스 카드 생성
+            createAndSaveInsuranceCard(customer.getId(), customer.getId(), true, customer.getFullName()); // 고객 자신을 위한 새 인슈어런스 카드
             for (Dependent dependent : customer.getDependents()) {
-                createAndSaveInsuranceCard(dependent.getId(), customer.getId(), false); // 새 디펜던트를 위한 새 인슈어런스 카드
+                // 여기서 cardHolderName을 포함하여 메서드를 호출해야 합니다.
+                createAndSaveInsuranceCard(dependent.getId(), customer.getId(), false, dependent.getFullName()); // 각 Dependent를 위한 새 인슈어런스 카드
             }
 
             return true;
@@ -127,10 +130,23 @@ public class CustomerManagerImpl implements CustomerManager {
     }
 
     private void updateInsuranceCard(String cardHolderId, String policyOwnerId) {
+        // cardHolderName을 찾기 위해 customers 맵에서 Customer 객체를 가져옵니다.
+        Customer cardHolder = customers.get(cardHolderId);
+        String cardHolderName = ""; // 초기화
+        if (cardHolder != null) {
+            cardHolderName = cardHolder.getFullName(); // 고객 이름을 가져옵니다.
+        } else {
+            // cardHolderId로 직접 Customer 객체를 찾을 수 없는 경우,
+            // 다른 방법으로 이름을 조회하거나 오류 처리를 해야 할 수 있습니다.
+            System.out.println("Error: No customer found with ID " + cardHolderId);
+            return; // 이름을 찾을 수 없으므로 작업을 중단합니다.
+        }
+
         // 기존 카드 삭제
         deleteInsuranceCard(cardHolderId);
-        // 새 카드 생성 및 저장
-        createAndSaveInsuranceCard(cardHolderId, policyOwnerId, cardHolderId.equals(policyOwnerId));
+
+        // 새 카드 생성 및 저장 - 이제 cardHolderName을 포함하여 호출합니다.
+        createAndSaveInsuranceCard(cardHolderId, policyOwnerId, cardHolderId.equals(policyOwnerId), cardHolderName);
     }
 
     @Override

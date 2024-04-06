@@ -7,6 +7,11 @@ import java.io.FileInputStream;
 import java.io.File;
 import java.lang.ClassNotFoundException;
 import java.util.Date;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.UUID;
+import java.text.SimpleDateFormat;
+import java.text.ParseException;
 public class Main {
     private static final Scanner scanner = new Scanner(System.in);
     private static final CustomerManager customerManager = new CustomerManagerImpl();
@@ -254,37 +259,72 @@ public class Main {
         }
     }
 
-    // 클레임 추가 로직
-    private static void addClaim() {
-        System.out.println("Adding a new claim...");
-        // Implementation goes here
+    public static void addClaim() {
+        System.out.print("Enter customer ID (c-7자리): ");
+        String customerId = scanner.nextLine();
+
+        try {
+            claimProcessManager.addClaimWithCustomerID(customerId);
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println("An error occurred while adding the claim.");
+            e.printStackTrace();
+        }
     }
 
-    // 클레임 조회 로직
+    private static Date parseDate(String dateString) {
+        try {
+            return new SimpleDateFormat("yyyy-MM-dd").parse(dateString);
+        } catch (ParseException e) {
+            System.out.println("Invalid date format. Please use yyyy-MM-dd.");
+            return null;
+        }
+    }
     private static void viewClaim() {
-        System.out.println("Viewing a claim...");
-        // Implementation goes here
+        System.out.print("Enter claim ID: ");
+        String claimId = scanner.nextLine();
+
+        Claim claim = claimProcessManager.getClaimById(claimId);
+        if (claim != null) {
+            System.out.println(claim);
+        } else {
+            System.out.println("Claim not found.");
+        }
     }
 
-    // 클레임 업데이트 로직
     private static void updateClaim() {
-        System.out.println("Updating a claim...");
-        // Implementation goes here
+        System.out.print("Enter claim ID: ");
+        String claimId = scanner.nextLine();
+
+        Claim claim = claimProcessManager.getClaimById(claimId);
+        if (claim == null) {
+            System.out.println("Claim not found.");
+            return;
+        }
+
+        System.out.print("Enter new status (New, Processing, Done): ");
+        String newStatus = scanner.nextLine();
+        claim.setStatus(newStatus);
+
+        claimProcessManager.updateClaim(claimId, claim);
+        System.out.println("Claim updated successfully.");
     }
 
-    // 클레임 삭제 로직
     private static void deleteClaim() {
-        System.out.println("Deleting a claim...");
-        // Implementation goes here
+        System.out.print("Enter claim ID: ");
+        String claimId = scanner.nextLine();
+
+        claimProcessManager.deleteClaim(claimId);
+        System.out.println("Claim deleted successfully.");
     }
 
-    // 모든 클레임 리스트 로직
     private static void listAllClaims() {
-        System.out.println("Listing all claims...");
-        // Implementation goes here
+        List<Claim> claims = claimProcessManager.getAllClaims();
+        for (Claim claim : claims) {
+            System.out.println(claim);
+        }
     }
 
-    // 기타 필요한 메소드...
+
 }
 
 
