@@ -1,2 +1,14 @@
 # insurance-claims-management-system
 This is insurance claims management system made for my RMIT uni assignment 
+
+This system is a console-based application designed to assist employees of insurance companies and policyholders in the effective management and tracking of insurance claims. Developed using Java, the design of this application is rooted in the principles of object-oriented programming (OOP), incorporating fundamental concepts such as inheritance, polymorphism, and abstraction throughout the project.
+	Detailed Descriptions of Classes and Interfaces
+Main (Class): Serves as the entry point of the program, including the user interface and the logic for loading initial data. It provides a menu-based interface to facilitate user interaction with the system, managing the overall flow of the application.
+Claim (Class): Handles insurance claim information. Attributes include the claim ID, claim date, insured person, card number, examination date, list of documents, claim amount, status, and recipient's banking information. It encompasses methods for managing and processing various claim-related data.
+ClaimProcessManager (Interface): Defines tasks related to claim processing. It outlines functions for adding, updating, deleting, and retrieving claims. Utilizing polymorphism, it lays the foundation for implementing diverse claim processing logic.
+ClaimProcessManagerImpl (Class): Implements the ClaimProcessManager interface. It contains logic for actual claim processing, including adding, updating, deleting, and retrieving claim data, thus enabling the application to execute specific claim management functions.
+Customer (Class): Manages customer information. Properties include the customer ID, full name, insurance card, and a list of claims. It oversees information for both policyholders and dependents, tracking claims associated with their insurance cards.
+CustomerManager (Interface): Defines tasks related to customer management. It specifies functions for adding, removing, and updating customers. Through polymorphism, it provides a basis for implementing various customer management strategies.
+CustomerManagerImpl (Class): Implements the CustomerManager interface. It realizes functions for adding, removing, and updating customer data, effectively managing customer information. This class includes specific logic for manipulating customer data, making it accessible for users of the application.
+Dependent (Class): Inherits from the Customer class, representing dependents (family members of policyholders, etc.). It is linked to policyholders and allows sharing of certain insurance benefits.
+InsuranceCard (Class): Manages insurance card information. Attributes include the card number, cardholder, policy owner, and expiration date. It administers the information of insurance cards held by each customer.
