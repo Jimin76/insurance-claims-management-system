@@ -15,7 +15,7 @@ import java.text.ParseException;
 public class Main {
     private static final Scanner scanner = new Scanner(System.in);
     private static final CustomerManager customerManager = new CustomerManagerImpl();
-    private static final ClaimProcessManager claimProcessManager = new ClaimProcessManagerImpl(); // 클레임 관리자 인스턴스 추가
+    private static final ClaimProcessManager claimProcessManager = new ClaimProcessManagerImpl(customerManager); // 클레임 관리자 인스턴스 추가
     private static final String INSURANCE_CARD_DIR = "./insurance cards/";
 
     public static void main(String[] args) {

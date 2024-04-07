@@ -10,10 +10,12 @@ import java.text.ParseException;
 
 public class ClaimProcessManagerImpl implements ClaimProcessManager {
     private Map<String, Claim> claims = new HashMap<>();
+    private CustomerManager customerManager; // CustomerManagerImpl의 인스턴스를 저장하기 위한 필드
     private static final String CLAIMS_DIR = "./claims/";
     private static final String INSURANCE_CARDS_DIR = "./insurance cards/";
 
-    public ClaimProcessManagerImpl() {
+    public ClaimProcessManagerImpl(CustomerManager customerManager) {
+        this.customerManager = customerManager;
         new File(CLAIMS_DIR).mkdirs();
         loadAllClaims();
     }
@@ -23,13 +25,21 @@ public class ClaimProcessManagerImpl implements ClaimProcessManager {
         claims.put(claim.getId(), claim);
         try {
             saveClaimToFile(claim);
+            // 추가된 로직: 고객의 claimIds 업데이트
+            Customer customer = customerManager.getCustomerById(claim.getInsuredPersonId()); // 정정: customers.get 대신 customerManager 사용
+            if (customer != null) {
+                customer.getClaimIds().add(claim.getId());
+                customerManager.updateCustomer(customer); // 고객 정보 업데이트
+            }
         } catch (IOException e) {
             System.out.println("Failed to save the claim to file.");
             e.printStackTrace();
         }
     }
 
+
     public void addClaimWithCustomerID(String customerId) throws IOException, ClassNotFoundException {
+        System.out.println("Looking for file at: " + INSURANCE_CARDS_DIR + customerId + "_insurance_card.txt"); // 로그 추가
         File insuranceCardFile = new File(INSURANCE_CARDS_DIR + customerId + "_insurance_card.txt");
         if (!insuranceCardFile.exists()) {
             System.out.println("No insurance card found for the provided customer ID.");
@@ -92,8 +102,16 @@ public class ClaimProcessManagerImpl implements ClaimProcessManager {
 
     @Override
     public void deleteClaim(String claimId) {
-        claims.remove(claimId);
+        Claim claim = claims.remove(claimId);
         deleteClaimFile(claimId);
+        if (claim != null) {
+            // 삭제된 클레임에 해당하는 커스터머를 찾아 클레임 ID 목록에서 제거합니다.
+            Customer customer = customerManager.getCustomerById(claim.getInsuredPersonId());
+            if (customer != null) {
+                customer.removeClaimId(claimId);
+                customerManager.updateCustomer(customer); // 커스터머 정보를 업데이트하는 메소드 (구현 필요)
+            }
+        }
     }
 
     @Override

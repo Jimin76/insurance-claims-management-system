@@ -18,27 +18,36 @@ public class CustomerManagerImpl implements CustomerManager {
 
     @Override
     public boolean addCustomer(Customer customer) {
+        // 고객 ID 생성 및 설정
         String customerId = "c-" + ThreadLocalRandom.current().nextInt(1000000, 10000000);
         customer.setId(customerId);
-        customer.setIsPolicyHolder(true);
 
+        // 고객 정보 저장
         customers.put(customerId, customer);
-        saveCustomer(customer);
+        saveCustomer(customer); // 고객 정보를 파일에 저장하는 메서드 구현 필요
 
-        createAndSaveInsuranceCard(customerId, customerId, true, customer.getFullName()); // Policy holder 자신을 위한 카드
+        // 고객의 인슈어런스 카드 생성 및 저장
+        String customerCardId = createAndSaveInsuranceCard(customerId, customerId, true, customer.getFullName());
+        customer.addInsuranceCardId(customerCardId); // 여기서 고객의 인슈어런스 카드 ID를 추가
+
+        // 디펜던트의 인슈어런스 카드 생성 및 저장
         for (Dependent dependent : customer.getDependents()) {
-            // Dependent의 fullName을 cardHolderName으로 전달합니다.
-            createAndSaveInsuranceCard(dependent.getId(), customerId, false, dependent.getFullName()); // 각 Dependent를 위한 카드
+            String dependentCardId = createAndSaveInsuranceCard(dependent.getId(), customerId, false, dependent.getFullName());
+            dependent.setInsuranceCardId(dependentCardId); // 디펜던트에게 고유한 카드 번호 설정
+            dependent.setPolicyOwnerId(customerId); // 여기서 디펜던트의 policyOwnerId를 설정
         }
-        return true;
+
+        saveCustomer(customer); // 변경된 고객 정보를 다시 저장합니다.
+
+        return true; // 성공적으로 추가되었음을 의미
     }
 
-    private void createAndSaveInsuranceCard(String cardHolderId, String policyOwnerId, boolean isPolicyHolder, String cardHolderName) {
+    private String createAndSaveInsuranceCard(String cardHolderId, String policyOwnerId, boolean isPolicyHolder, String cardHolderName) {
         String cardNumber = generateRandomCardNumber();
         Date expirationDate = generateCardExpirationDate();
-        // cardHolderName 파라미터를 생성자 호출에 추가합니다.
         InsuranceCard card = new InsuranceCard(cardNumber, cardHolderId, policyOwnerId, expirationDate, cardHolderName);
         saveInsuranceCard(card);
+        return cardNumber; // 인슈어런스 카드 번호 반환
     }
 
     private String generateRandomCardNumber() {
@@ -60,7 +69,6 @@ public class CustomerManagerImpl implements CustomerManager {
         }
     }
 
-
     @Override
     public Customer getCustomerById(String id) {
         return customers.get(id);
@@ -75,12 +83,11 @@ public class CustomerManagerImpl implements CustomerManager {
     public boolean deleteCustomer(String id) {
         Customer customer = customers.remove(id);
         if (customer != null) {
-            deleteInsuranceCard(customer.getId()); // 인슈어런스 카드 삭제 로직 추가
-            for (Dependent dependent : customer.getDependents()) {
-                deleteInsuranceCard(dependent.getId()); // 디펜던트의 인슈어런스 카드 삭제
-            }
+            // 인슈어런스 카드 삭제 로직
+            deleteInsuranceCard(customer.getId());
+            // 고객 삭제 로직
             try {
-                Files.deleteIfExists(Paths.get(CUSTOMER_DIR + customer.getId() + ".txt"));
+                Files.deleteIfExists(Paths.get(CUSTOMER_DIR + id + ".txt"));
                 return true;
             } catch (IOException e) {
                 e.printStackTrace();
@@ -90,63 +97,24 @@ public class CustomerManagerImpl implements CustomerManager {
     }
 
     private void deleteInsuranceCard(String cardHolderId) {
-        String filename = cardHolderId + "_insurance_card.txt";
-        Path path = Paths.get(INSURANCE_CARD_DIR, filename);
-        System.out.println("Attempting to delete insurance card: " + path); // Debugging log
+        String filename = INSURANCE_CARD_DIR + cardHolderId + "_insurance_card.txt";
         try {
-            boolean deleted = Files.deleteIfExists(path);
-            System.out.println("Insurance card " + (deleted ? "successfully deleted." : "not found or already deleted.")); // Debugging log
+            Files.deleteIfExists(Paths.get(filename));
         } catch (IOException e) {
-            System.err.println("Error deleting insurance card: " + path);
             e.printStackTrace();
         }
     }
 
     @Override
     public boolean updateCustomer(Customer customer) {
-        if (customers.containsKey(customer.getId())) {
-            Customer existingCustomer = customers.get(customer.getId());
-
-            // 기존 인슈어런스 카드 삭제
-            deleteInsuranceCard(existingCustomer.getId()); // 고객 자신의 인슈어런스 카드 삭제
-            for (Dependent dependent : existingCustomer.getDependents()) {
-                deleteInsuranceCard(dependent.getId()); // 기존 디펜던트의 인슈어런스 카드 삭제
-            }
-
-            // 고객 정보 업데이트
-            customers.put(customer.getId(), customer);
-            saveCustomer(customer); // 변경된 고객 정보를 파일에 다시 저장
-
-            // 새로운 인슈어런스 카드 생성
-            createAndSaveInsuranceCard(customer.getId(), customer.getId(), true, customer.getFullName()); // 고객 자신을 위한 새 인슈어런스 카드
-            for (Dependent dependent : customer.getDependents()) {
-                // 여기서 cardHolderName을 포함하여 메서드를 호출해야 합니다.
-                createAndSaveInsuranceCard(dependent.getId(), customer.getId(), false, dependent.getFullName()); // 각 Dependent를 위한 새 인슈어런스 카드
-            }
-
+        String customerId = customer.getId();
+        if (customers.containsKey(customerId)) {
+            customers.put(customerId, customer);
+            saveCustomer(customer); // 변경된 고객 정보를 파일에 저장
             return true;
-        }
-        return false;
-    }
-
-    private void updateInsuranceCard(String cardHolderId, String policyOwnerId) {
-        // cardHolderName을 찾기 위해 customers 맵에서 Customer 객체를 가져옵니다.
-        Customer cardHolder = customers.get(cardHolderId);
-        String cardHolderName = ""; // 초기화
-        if (cardHolder != null) {
-            cardHolderName = cardHolder.getFullName(); // 고객 이름을 가져옵니다.
         } else {
-            // cardHolderId로 직접 Customer 객체를 찾을 수 없는 경우,
-            // 다른 방법으로 이름을 조회하거나 오류 처리를 해야 할 수 있습니다.
-            System.out.println("Error: No customer found with ID " + cardHolderId);
-            return; // 이름을 찾을 수 없으므로 작업을 중단합니다.
+            return false;
         }
-
-        // 기존 카드 삭제
-        deleteInsuranceCard(cardHolderId);
-
-        // 새 카드 생성 및 저장 - 이제 cardHolderName을 포함하여 호출합니다.
-        createAndSaveInsuranceCard(cardHolderId, policyOwnerId, cardHolderId.equals(policyOwnerId), cardHolderName);
     }
 
     @Override

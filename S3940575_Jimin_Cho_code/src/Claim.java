@@ -15,6 +15,7 @@ public class Claim implements Serializable {
     private double claimAmount;
     private String status; // New, Processing, Done
     private String receiverBankingInfo;
+    private String insuredPersonId;
 
     // Constructor
     public Claim(String id) {
@@ -22,6 +23,9 @@ public class Claim implements Serializable {
     }
 
     // Getters and Setters
+
+
+
     public String getId() {
         return id;
     }
@@ -93,6 +97,16 @@ public class Claim implements Serializable {
     public void setReceiverBankingInfo(String receiverBankingInfo) {
         this.receiverBankingInfo = receiverBankingInfo;
     }
+
+    public String getInsuredPersonId() {
+        return insuredPersonId;
+    }
+
+    // insuredPersonId 필드에 대한 setter 메소드도 구현해야 할 수 있습니다.
+    public void setInsuredPersonId(String insuredPersonId) {
+        this.insuredPersonId = insuredPersonId;
+    }
+
     @Override
     public String toString() {
         return "Claim{" +
@@ -105,6 +119,7 @@ public class Claim implements Serializable {
                 ", claimAmount=" + claimAmount +
                 ", status='" + status + '\'' +
                 ", receiverBankingInfo='" + receiverBankingInfo + '\'' +
+                "insuredPersonId='" + insuredPersonId + '\'' +
                 '}';
     }
 
