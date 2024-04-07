@@ -2,11 +2,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
+import java.lang.Comparable;
 /**
  * @author <Jimin Cho - s3940575>
  */
-public class Claim implements Serializable {
+public class Claim implements Serializable, Comparable<Claim> {
     private static final long serialVersionUID = 1L;
 
     private String id;
@@ -109,6 +109,10 @@ public class Claim implements Serializable {
         this.insuredPersonId = insuredPersonId;
     }
 
+    @Override
+    public int compareTo(Claim other) {
+        return this.insuredPerson.compareTo(other.insuredPerson);
+    }
     @Override
     public String toString() {
         return "Claim{" +

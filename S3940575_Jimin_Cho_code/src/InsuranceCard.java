@@ -1,11 +1,11 @@
 import java.io.Serializable;
 import java.util.Date;
-
+import java.lang.Comparable;
 /**
  * @author <Jimin Cho - s3940575>
  */
 
-public class InsuranceCard implements Serializable {
+public class InsuranceCard implements Serializable, Comparable<InsuranceCard> {
     private String cardNumber;
     private String cardHolderId;
     private String policyOwnerId;
@@ -35,6 +35,10 @@ public class InsuranceCard implements Serializable {
     public String getPolicyOwnerId() { return policyOwnerId; }
     public Date getExpirationDate() { return expirationDate; }
 
+    @Override
+    public int compareTo(InsuranceCard other) {
+        return this.cardHolderName.compareTo(other.cardHolderName);
+    }
     @Override
     public String toString() {
         return "InsuranceCard{" +

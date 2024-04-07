@@ -1,11 +1,12 @@
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.lang.Comparable;
 
 /**
  * @author <Jimin Cho - s3940575>
  */
-public class Customer implements Serializable {
+public class Customer implements Serializable, Comparable<Customer> {
     private String id;
     private String fullName;
     private boolean isPolicyHolder;
@@ -60,6 +61,10 @@ public class Customer implements Serializable {
     public void setInsuranceCardIds(List<String> insuranceCardIds) { this.insuranceCardIds = insuranceCardIds; }
     public void setClaimIds(List<String> claimIds) { this.claimIds = claimIds; }
 
+    @Override
+    public int compareTo(Customer other) {
+        return this.fullName.compareTo(other.fullName);
+    }
     @Override
     public String toString() {
         return "Customer{" +
