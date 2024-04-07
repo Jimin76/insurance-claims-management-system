@@ -260,23 +260,47 @@ public class Main {
     }
 
     public static void addClaim() {
-        System.out.print("Enter customer ID (c-7자리): ");
+        System.out.println("Enter the details for the new claim.");
+
+        System.out.print("Enter customer ID: ");
         String customerId = scanner.nextLine();
 
-        try {
-            claimProcessManager.addClaimWithCustomerID(customerId);
-        } catch (IOException | ClassNotFoundException e) {
-            System.out.println("An error occurred while adding the claim.");
-            e.printStackTrace();
-        }
+        System.out.print("Enter claim date (yyyy-MM-dd): ");
+        String claimDateStr = scanner.nextLine();
+        Date claimDate = parseDate(claimDateStr); // 날짜 파싱 메소드 사용
+
+        System.out.print("Enter exam date (yyyy-MM-dd): ");
+        String examDateStr = scanner.nextLine();
+        Date examDate = parseDate(examDateStr); // 날짜 파싱 메소드 사용
+
+        System.out.print("Enter claim amount: ");
+        double claimAmount = scanner.nextDouble();
+        scanner.nextLine(); // 숫자 입력 후 newline 문자 처리
+
+        System.out.print("Enter receiver banking info (Bank – Name – Number): ");
+        String receiverBankingInfo = scanner.nextLine();
+
+        // 새로운 Claim 객체 생성 및 설정
+        Claim newClaim = new Claim(UUID.randomUUID().toString());
+        newClaim.setInsuredPersonId(customerId);
+        newClaim.setClaimDate(claimDate);
+        newClaim.setExamDate(examDate);
+        newClaim.setClaimAmount(claimAmount);
+        newClaim.setReceiverBankingInfo(receiverBankingInfo);
+        newClaim.setStatus("New"); // 상태 초기 설정
+
+        // ClaimProcessManager를 통해 새 Claim 객체 추가
+        claimProcessManager.addClaim(newClaim);
+        System.out.println("Claim added successfully with ID: " + newClaim.getId());
     }
 
     private static Date parseDate(String dateString) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         try {
-            return new SimpleDateFormat("yyyy-MM-dd").parse(dateString);
+            return dateFormat.parse(dateString);
         } catch (ParseException e) {
             System.out.println("Invalid date format. Please use yyyy-MM-dd.");
-            return null;
+            return null; // 또는 적절한 예외 처리
         }
     }
     private static void viewClaim() {

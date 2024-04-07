@@ -20,19 +20,24 @@ public class ClaimProcessManagerImpl implements ClaimProcessManager {
         loadAllClaims();
     }
 
-    @Override
     public void addClaim(Claim claim) {
         claims.put(claim.getId(), claim);
+        System.out.println("Claim added to the system: " + claim.getId()); // 로그 추가
         try {
             saveClaimToFile(claim);
-            // 추가된 로직: 고객의 claimIds 업데이트
-            Customer customer = customerManager.getCustomerById(claim.getInsuredPersonId()); // 정정: customers.get 대신 customerManager 사용
+            System.out.println("Claim saved to file: " + claim.getId()); // 로그 추가
+            Customer customer = customerManager.getCustomerById(claim.getInsuredPersonId());
             if (customer != null) {
-                customer.getClaimIds().add(claim.getId());
-                customerManager.updateCustomer(customer); // 고객 정보 업데이트
+                System.out.println("Customer found for the claim: " + customer.getId()); // 로그 추가
+                customer.addClaimId(claim.getId());
+                System.out.println("Claim ID added to the customer: " + claim.getId()); // 로그 추가
+                // 변경된 고객 정보를 업데이트하고 저장합니다.
+                customerManager.updateCustomer(customer);
+            } else {
+                System.out.println("No customer found with ID: " + claim.getInsuredPersonId()); // 로그 추가
             }
         } catch (IOException e) {
-            System.out.println("Failed to save the claim to file.");
+            System.out.println("Failed to save the claim to file: " + claim.getId());
             e.printStackTrace();
         }
     }

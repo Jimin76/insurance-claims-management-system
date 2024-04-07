@@ -110,9 +110,12 @@ public class CustomerManagerImpl implements CustomerManager {
         String customerId = customer.getId();
         if (customers.containsKey(customerId)) {
             customers.put(customerId, customer);
+            System.out.println("Customer updated in memory: " + customerId); // 로그 추가
             saveCustomer(customer); // 변경된 고객 정보를 파일에 저장
+            System.out.println("Customer saved to file: " + customerId); // 로그 추가
             return true;
         } else {
+            System.out.println("No customer found to update: " + customerId); // 로그 추가
             return false;
         }
     }
