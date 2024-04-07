@@ -32,7 +32,7 @@ public class Main {
                 System.out.println("1. Customer Management System");
                 System.out.println("2. View all Insurance Cards");
                 System.out.println("3. Claim Management System");
-                System.out.println("4. Exit");
+                System.out.println("0. Exit");
                 System.out.print("Enter choice: ");
 
                 int mainChoice = scanner.nextInt();
@@ -48,7 +48,7 @@ public class Main {
                     case 3:
                         manageClaims();
                         break;
-                    case 4:
+                    case 0:
                         exit = true;
                         System.out.println("Exiting...");
                         break;
@@ -67,11 +67,11 @@ public class Main {
         while (!back) {
             System.out.println("\n--- Customer Management System ---");
             System.out.println("1. Add Customer");
-            System.out.println("2. View Customer");
+            System.out.println("2. View Customer(getOne)");
             System.out.println("3. Update Customer");
             System.out.println("4. Delete Customer");
-            System.out.println("5. List All Customers");
-            System.out.println("6. Back");
+            System.out.println("5. List All Customers(getAll)");
+            System.out.println("0. Back");
             System.out.print("Enter choice: ");
 
             int choice = scanner.nextInt();
@@ -93,7 +93,7 @@ public class Main {
                 case 5:
                     listAllCustomers();
                     break;
-                case 6:
+                case 0:
                     back = true;
                     break;
 
@@ -136,7 +136,7 @@ public class Main {
                 do {
                     System.out.print("Enter dependent's full name: ");
                     String depFullName = scanner.nextLine();
-                    System.out.print("Enter dependent's relationship: ");
+                    System.out.print("Enter dependent's relationship (example: Husband): ");
                     String relationship = scanner.nextLine();
 
                     // Generate a unique ID
@@ -161,7 +161,7 @@ public class Main {
 
 
     private static void viewCustomer() {
-        System.out.print("Enter customer ID: ");
+        System.out.print("Enter customer ID (c-numbers; 7 numbers): ");
         String id = scanner.nextLine();
         Customer customer = customerManager.getCustomerById(id);
         if (customer != null) {
@@ -173,7 +173,7 @@ public class Main {
 
     private static void deleteCustomer() {
         try {
-            System.out.print("Enter customer ID to delete: ");
+            System.out.print("Enter customer ID to delete (c-numbers; 7 numbers): ");
             String id = scanner.nextLine();
             if (customerManager.deleteCustomer(id)) {
                 System.out.println("Customer deleted successfully.");
@@ -192,7 +192,7 @@ public class Main {
     }
 
     private static void updateCustomer() {
-        System.out.print("Enter the ID of the customer to update: ");
+        System.out.print("Enter the ID of the customer to update (c-numbers; 7 numbers): ");
         String id = scanner.nextLine();
         Customer customer = customerManager.getCustomerById(id);
 
@@ -213,7 +213,7 @@ public class Main {
             do {
                 System.out.print("Enter dependent's full name: ");
                 String depFullName = scanner.nextLine();
-                System.out.print("Enter dependent's relationship: ");
+                System.out.print("Enter dependent's relationship (example: Husband): ");
                 String relationship = scanner.nextLine();
 
                 // generate new ID
@@ -245,12 +245,12 @@ public class Main {
         while (true) {
             System.out.println("\n--- Claim Management System ---");
             System.out.println("1. Add Claim");
-            System.out.println("2. View Claim");
+            System.out.println("2. View Claim(getOne)");
             System.out.println("3. Update Claim");
             System.out.println("4. Delete Claim");
-            System.out.println("5. List All Claims");
+            System.out.println("5. List All Claims(getAll)");
             System.out.println("6. Change Status");
-            System.out.println("7. Back");
+            System.out.println("0. Back");
             System.out.print("Enter choice: ");
 
             int choice = scanner.nextInt();
@@ -273,7 +273,7 @@ public class Main {
                     listAllClaims();
                     break;
                 case 6:
-                    System.out.print("Enter claim ID for status change: ");
+                    System.out.print("Enter claim ID for status change (f-numbers; 10 numbers): ");
                     String claimIdForStatus = scanner.nextLine();
                     System.out.print("Enter new status (New, Processing, Done): ");
                     String newStatus = scanner.nextLine();
@@ -284,8 +284,8 @@ public class Main {
                         e.printStackTrace();
                     }
                     break;
-                case 7:
-                    return; // Back to main menu
+                case 0:
+                    return;
                 default:
                     System.out.println("Invalid choice. Please enter 1-6.");
             }
@@ -293,7 +293,7 @@ public class Main {
     }
 
     public static void addClaim() {
-        System.out.print("Enter customer ID (c-7자리): ");
+        System.out.print("Enter customer ID (c-numbers; 7 numbers): ");
         String customerId = scanner.nextLine();
 
         try {
@@ -313,7 +313,7 @@ public class Main {
         }
     }
     private static void viewClaim() {
-        System.out.print("Enter claim ID: ");
+        System.out.print("Enter claim ID (f-numbers; 10 numbers): ");
         String claimId = scanner.nextLine();
 
         Claim claim = claimProcessManager.getClaimById(claimId);
@@ -325,7 +325,7 @@ public class Main {
     }
 
     private static void updateClaim() {
-        System.out.print("Enter claim ID: ");
+        System.out.print("Enter claim ID (f-numbers; 10 numbers): ");
         String claimId = scanner.nextLine();
 
         try {
@@ -337,7 +337,7 @@ public class Main {
     }
 
     private static void deleteClaim() {
-        System.out.print("Enter claim ID: ");
+        System.out.print("Enter claim ID (f-numbers; 10 numbers): ");
         String claimId = scanner.nextLine();
 
         claimProcessManager.deleteClaim(claimId);

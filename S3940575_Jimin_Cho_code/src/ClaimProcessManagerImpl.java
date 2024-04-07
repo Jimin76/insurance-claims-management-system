@@ -173,7 +173,7 @@ public class ClaimProcessManagerImpl implements ClaimProcessManager {
         double claimAmount = scanner.nextDouble();
         scanner.nextLine();
 
-        System.out.print("Enter receiver banking info (Bank – Name – Number): ");
+        System.out.print("Enter receiver banking info (Bank_Name_Number): ");
         String receiverBankingInfo = scanner.nextLine();
 
         // Update the claim object
