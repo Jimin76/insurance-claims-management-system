@@ -8,10 +8,15 @@ import java.io.File;
 import java.lang.ClassNotFoundException;
 import java.util.Date;
 import java.util.List;
-import java.util.ArrayList;
-import java.util.UUID;
+//import java.util.ArrayList;
+//import java.util.UUID;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
+
+
+/**
+ * @author <Jimin Cho - s3940575>
+ */
 public class Main {
     private static final Scanner scanner = new Scanner(System.in);
     private static final CustomerManager customerManager = new CustomerManagerImpl();
@@ -26,12 +31,12 @@ public class Main {
                 System.out.println("Please select options above:");
                 System.out.println("1. Customer Management System");
                 System.out.println("2. View all Insurance Cards");
-                System.out.println("3. Claim Management System"); // "Under development" 제거
+                System.out.println("3. Claim Management System");
                 System.out.println("4. Exit");
                 System.out.print("Enter choice: ");
 
                 int mainChoice = scanner.nextInt();
-                scanner.nextLine(); // Consume newline
+                scanner.nextLine();
 
                 switch (mainChoice) {
                     case 1:
@@ -41,7 +46,7 @@ public class Main {
                         viewAllInsuranceCards();
                         break;
                     case 3:
-                        manageClaims(); // 클레임 관리 시스템 호출
+                        manageClaims();
                         break;
                     case 4:
                         exit = true;
@@ -52,7 +57,7 @@ public class Main {
                 }
             } catch (InputMismatchException ime) {
                 System.out.println("Invalid input. Please enter a number.");
-                scanner.nextLine(); // 입력 스트림을 지우고 다시 사용자 입력을 받을 준비를 함
+                scanner.nextLine();
             }
         }
     }
@@ -70,7 +75,7 @@ public class Main {
             System.out.print("Enter choice: ");
 
             int choice = scanner.nextInt();
-            scanner.nextLine(); // Consume newline
+            scanner.nextLine();
 
             switch (choice) {
                 case 1:
@@ -119,36 +124,41 @@ public class Main {
     }
 
     private static void addCustomer() {
-        System.out.print("Enter customer's full name: ");
-        String fullName = scanner.nextLine();
-        Customer customer = new Customer(fullName, true);
+        try {
+            System.out.print("Enter customer's full name: ");
+            String fullName = scanner.nextLine();
+            Customer customer = new Customer(fullName, true);
 
-        System.out.print("Does this customer have dependents? (yes/no): ");
-        String hasDependents = scanner.nextLine();
+            System.out.print("Does this customer have dependents? (yes/no): ");
+            String hasDependents = scanner.nextLine();
 
-        if ("yes".equalsIgnoreCase(hasDependents)) {
-            do {
-                System.out.print("Enter dependent's full name: ");
-                String depFullName = scanner.nextLine();
-                System.out.print("Enter dependent's relationship: ");
-                String relationship = scanner.nextLine();
+            if ("yes".equalsIgnoreCase(hasDependents)) {
+                do {
+                    System.out.print("Enter dependent's full name: ");
+                    String depFullName = scanner.nextLine();
+                    System.out.print("Enter dependent's relationship: ");
+                    String relationship = scanner.nextLine();
 
-                // 고유 ID 생성
-                String depId = "c-" + ThreadLocalRandom.current().nextInt(1000000, 10000000);
+                    // Generate a unique ID
+                    String depId = "c-" + ThreadLocalRandom.current().nextInt(1000000, 10000000);
 
-                Dependent dependent = new Dependent(depId, depFullName, customer.getId(), relationship);
-                customer.addDependent(dependent);
+                    Dependent dependent = new Dependent(depId, depFullName, customer.getId(), relationship);
+                    customer.addDependent(dependent);
 
-                System.out.print("Would you like to add another dependent? (yes/no): ");
-            } while ("yes".equalsIgnoreCase(scanner.nextLine()));
-        }
+                    System.out.print("Would you like to add another dependent? (yes/no): ");
+                } while ("yes".equalsIgnoreCase(scanner.nextLine()));
+            }
 
-        if (customerManager.addCustomer(customer)) {
-            System.out.println("Customer added successfully.");
-        } else {
-            System.out.println("Failed to add customer.");
+            if (customerManager.addCustomer(customer)) {
+                System.out.println("Customer added successfully.");
+            } else {
+                System.out.println("Failed to add customer.");
+            }
+        } catch (Exception e) {
+            System.err.println("An error occurred: " + e.getMessage());
         }
     }
+
 
     private static void viewCustomer() {
         System.out.print("Enter customer ID: ");
@@ -162,14 +172,19 @@ public class Main {
     }
 
     private static void deleteCustomer() {
-        System.out.print("Enter customer ID to delete: ");
-        String id = scanner.nextLine();
-        if (customerManager.deleteCustomer(id)) {
-            System.out.println("Customer deleted successfully.");
-        } else {
-            System.out.println("Failed to delete customer.");
+        try {
+            System.out.print("Enter customer ID to delete: ");
+            String id = scanner.nextLine();
+            if (customerManager.deleteCustomer(id)) {
+                System.out.println("Customer deleted successfully.");
+            } else {
+                System.out.println("Failed to delete customer.");
+            }
+        } catch (Exception e) {
+            System.err.println("An error occurred while attempting to delete customer: " + e.getMessage());
         }
     }
+
 
     private static void listAllCustomers() {
         System.out.println("Listing all customers:");
@@ -193,7 +208,7 @@ public class Main {
         System.out.print("Does this customer have dependents? (yes/no): ");
         String hasDependents = scanner.nextLine();
 
-        customer.getDependents().clear(); // 기존 디펜던트 정보를 삭제
+        customer.getDependents().clear(); // delete existing dependent info
         if ("yes".equalsIgnoreCase(hasDependents)) {
             do {
                 System.out.print("Enter dependent's full name: ");
@@ -201,10 +216,10 @@ public class Main {
                 System.out.print("Enter dependent's relationship: ");
                 String relationship = scanner.nextLine();
 
-                // 새로운 고유 ID 생성
+                // generate new ID
                 String depId = "d-" + ThreadLocalRandom.current().nextInt(1000000, 10000000);
 
-                // policyOwnerId는 고객의 ID를 사용
+                // policyOwnerId is dependent owner or custumers id
                 String policyOwnerId = customer.getId();
 
                 Dependent dependent = new Dependent(depId, depFullName, policyOwnerId, relationship);
@@ -214,12 +229,17 @@ public class Main {
             } while ("yes".equalsIgnoreCase(scanner.nextLine()));
         }
 
-        if (customerManager.updateCustomer(customer)) {
-            System.out.println("Customer updated successfully.");
-        } else {
-            System.out.println("Failed to update customer.");
+        try {
+            if (customerManager.updateCustomer(customer)) {
+                System.out.println("Customer updated successfully.");
+            } else {
+                System.out.println("Failed to update customer.");
+            }
+        } catch (Exception e) {
+            System.err.println("An error occurred while updating the customer: " + e.getMessage());
         }
     }
+
 
     private static void manageClaims() {
         while (true) {
@@ -229,11 +249,12 @@ public class Main {
             System.out.println("3. Update Claim");
             System.out.println("4. Delete Claim");
             System.out.println("5. List All Claims");
-            System.out.println("6. Back");
+            System.out.println("6. Change Status");
+            System.out.println("7. Back");
             System.out.print("Enter choice: ");
 
             int choice = scanner.nextInt();
-            scanner.nextLine(); // Consume newline
+            scanner.nextLine();
 
             switch (choice) {
                 case 1:
@@ -252,6 +273,18 @@ public class Main {
                     listAllClaims();
                     break;
                 case 6:
+                    System.out.print("Enter claim ID for status change: ");
+                    String claimIdForStatus = scanner.nextLine();
+                    System.out.print("Enter new status (New, Processing, Done): ");
+                    String newStatus = scanner.nextLine();
+                    try {
+                        claimProcessManager.changeStatus(claimIdForStatus, newStatus);
+                    } catch (IOException e) {
+                        System.out.println("Error changing claim status.");
+                        e.printStackTrace();
+                    }
+                    break;
+                case 7:
                     return; // Back to main menu
                 default:
                     System.out.println("Invalid choice. Please enter 1-6.");
@@ -295,18 +328,12 @@ public class Main {
         System.out.print("Enter claim ID: ");
         String claimId = scanner.nextLine();
 
-        Claim claim = claimProcessManager.getClaimById(claimId);
-        if (claim == null) {
-            System.out.println("Claim not found.");
-            return;
+        try {
+            claimProcessManager.updateClaim(claimId);
+        } catch (IOException | ParseException e) {
+            System.out.println("An error occurred while updating the claim.");
+            e.printStackTrace();
         }
-
-        System.out.print("Enter new status (New, Processing, Done): ");
-        String newStatus = scanner.nextLine();
-        claim.setStatus(newStatus);
-
-        claimProcessManager.updateClaim(claimId, claim);
-        System.out.println("Claim updated successfully.");
     }
 
     private static void deleteClaim() {

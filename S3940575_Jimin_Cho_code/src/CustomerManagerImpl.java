@@ -2,8 +2,12 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
-import java.text.SimpleDateFormat;
+//import java.text.SimpleDateFormat;
 import java.util.Calendar;
+
+/**
+ * @author <Jimin Cho - s3940575>
+ */
 
 public class CustomerManagerImpl implements CustomerManager {
     private Map<String, Customer> customers = new HashMap<>();
@@ -12,34 +16,35 @@ public class CustomerManagerImpl implements CustomerManager {
 
     public CustomerManagerImpl() {
         new File(CUSTOMER_DIR).mkdirs();
-        new File(INSURANCE_CARD_DIR).mkdirs(); // 인슈어런스 카드 디렉토리 생성
+        new File(INSURANCE_CARD_DIR).mkdirs();
         loadCustomers();
     }
 
     @Override
-    public boolean addCustomer(Customer customer) {
-        // 고객 ID 생성 및 설정
+    public boolean addCustomer(Customer customer) throws IOException {
+        // Generate and set customer ID
         String customerId = "c-" + ThreadLocalRandom.current().nextInt(1000000, 10000000);
         customer.setId(customerId);
 
-        // 고객 정보 저장
+
+        // Save customer information
         customers.put(customerId, customer);
-        saveCustomer(customer); // 고객 정보를 파일에 저장하는 메서드 구현 필요
+        saveCustomer(customer);
 
-        // 고객의 인슈어런스 카드 생성 및 저장
+        // Create and save the customer's insurance card
         String customerCardId = createAndSaveInsuranceCard(customerId, customerId, true, customer.getFullName());
-        customer.addInsuranceCardId(customerCardId); // 여기서 고객의 인슈어런스 카드 ID를 추가
+        customer.addInsuranceCardId(customerCardId);
 
-        // 디펜던트의 인슈어런스 카드 생성 및 저장
+        // Create and save the insurance card for the dependent
         for (Dependent dependent : customer.getDependents()) {
             String dependentCardId = createAndSaveInsuranceCard(dependent.getId(), customerId, false, dependent.getFullName());
-            dependent.setInsuranceCardId(dependentCardId); // 디펜던트에게 고유한 카드 번호 설정
-            dependent.setPolicyOwnerId(customerId); // 여기서 디펜던트의 policyOwnerId를 설정
+            dependent.setInsuranceCardId(dependentCardId);
+            dependent.setPolicyOwnerId(customerId);
         }
 
-        saveCustomer(customer); // 변경된 고객 정보를 다시 저장합니다.
+        saveCustomer(customer);
 
-        return true; // 성공적으로 추가되었음을 의미
+        return true;
     }
 
     private String createAndSaveInsuranceCard(String cardHolderId, String policyOwnerId, boolean isPolicyHolder, String cardHolderName) {
@@ -47,7 +52,13 @@ public class CustomerManagerImpl implements CustomerManager {
         Date expirationDate = generateCardExpirationDate();
         InsuranceCard card = new InsuranceCard(cardNumber, cardHolderId, policyOwnerId, expirationDate, cardHolderName);
         saveInsuranceCard(card);
-        return cardNumber; // 인슈어런스 카드 번호 반환
+        return cardNumber;
+    }
+
+    private void saveInsuranceCard(InsuranceCard card, String cardHolderId) throws IOException {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(INSURANCE_CARD_DIR + cardHolderId + "_insurance_card.txt"))) {
+            oos.writeObject(card);
+        }
     }
 
     private String generateRandomCardNumber() {
@@ -80,12 +91,12 @@ public class CustomerManagerImpl implements CustomerManager {
     }
 
     @Override
-    public boolean deleteCustomer(String id) {
+    public boolean deleteCustomer(String id) throws IOException {
         Customer customer = customers.remove(id);
         if (customer != null) {
-            // 인슈어런스 카드 삭제 로직
+
             deleteInsuranceCard(customer.getId());
-            // 고객 삭제 로직
+
             try {
                 Files.deleteIfExists(Paths.get(CUSTOMER_DIR + id + ".txt"));
                 return true;
@@ -96,33 +107,77 @@ public class CustomerManagerImpl implements CustomerManager {
         return false;
     }
 
+    private void deleteInsuranceCards(Customer customer) throws IOException {
+        Files.deleteIfExists(Paths.get(INSURANCE_CARD_DIR + customer.getId() + "_insurance_card.txt"));
+        for (Dependent dependent : customer.getDependents()) {
+            Files.deleteIfExists(Paths.get(INSURANCE_CARD_DIR + dependent.getId() + "_insurance_card.txt"));
+        }
+    }
+
     private void deleteInsuranceCard(String cardHolderId) {
         String filename = INSURANCE_CARD_DIR + cardHolderId + "_insurance_card.txt";
         try {
             Files.deleteIfExists(Paths.get(filename));
+            System.out.println("Deleted insurance card for: " + cardHolderId);
         } catch (IOException e) {
+            System.out.println("Failed to delete insurance card for: " + cardHolderId);
             e.printStackTrace();
         }
     }
 
     @Override
-    public boolean updateCustomer(Customer customer) {
-        String customerId = customer.getId();
-        if (customers.containsKey(customerId)) {
-            customers.put(customerId, customer);
-            System.out.println("Customer updated in memory: " + customerId); // 로그 추가
-            saveCustomer(customer); // 변경된 고객 정보를 파일에 저장
-            System.out.println("Customer saved to file: " + customerId); // 로그 추가
-            return true;
-        } else {
-            System.out.println("No customer found to update: " + customerId); // 로그 추가
+    public boolean updateCustomer(Customer customer) throws IOException {
+        Customer existingCustomer = customers.get(customer.getId());
+        if (existingCustomer == null) {
+            System.out.println("Customer not found.");
             return false;
+        }
+
+        // Delete the existing insurance card for the dependent
+        for (Dependent dependent : existingCustomer.getDependents()) {
+            String dependentInsuranceCardFilename = INSURANCE_CARD_DIR + dependent.getInsuranceCardId() + "_insurance_card.txt";
+            Files.deleteIfExists(Paths.get(dependentInsuranceCardFilename));
+        }
+
+        // update customer info
+        existingCustomer.setFullName(customer.getFullName());
+        existingCustomer.setDependents(customer.getDependents());
+
+        // Create and save the insurance card for the new dependent
+        for (Dependent newDependent : customer.getDependents()) {
+            String dependentCardId = createAndSaveInsuranceCard(newDependent.getId(), customer.getId(), false, newDependent.getFullName());
+            newDependent.setInsuranceCardId(dependentCardId);
+        }
+
+        saveCustomer(existingCustomer); // save updated customer info
+        return true;
+    }
+
+    private void deleteInsuranceCardsForCustomer(Customer customer) throws IOException {
+        Files.deleteIfExists(Paths.get(INSURANCE_CARD_DIR + customer.getId() + "_insurance_card.txt"));
+        for (Dependent dependent : customer.getDependents()) {
+            Files.deleteIfExists(Paths.get(INSURANCE_CARD_DIR + dependent.getId() + "_insurance_card.txt"));
         }
     }
 
+    private void generateAndSaveInsuranceCards(Customer customer) throws IOException {
+        createAndSaveInsuranceCard(customer.getId(), customer.getId(), true, customer.getFullName());
+        for (Dependent dependent : customer.getDependents()) {
+            createAndSaveInsuranceCard(dependent.getId(), customer.getId(), false, dependent.getFullName());
+        }
+    }
+
+
+
     @Override
     public void saveCustomers() {
-        customers.values().forEach(this::saveCustomer);
+        customers.values().forEach(customer -> {
+            try {
+                saveCustomer(customer);
+            } catch (IOException e) {
+                System.err.println("Error saving customer " + customer.getId() + ": " + e.getMessage());
+            }
+        });
     }
 
     @Override
@@ -139,11 +194,11 @@ public class CustomerManagerImpl implements CustomerManager {
         }
     }
 
-    private void saveCustomer(Customer customer) {
+    private void saveCustomer(Customer customer) throws IOException {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(CUSTOMER_DIR + customer.getId() + ".txt"))) {
             oos.writeObject(customer);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw e;
         }
     }
 }

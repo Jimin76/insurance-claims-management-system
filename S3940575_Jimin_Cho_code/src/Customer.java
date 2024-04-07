@@ -2,6 +2,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @author <Jimin Cho - s3940575>
+ */
 public class Customer implements Serializable {
     private String id;
     private String fullName;
@@ -10,7 +13,7 @@ public class Customer implements Serializable {
     private List<String> insuranceCardIds = new ArrayList<>();
     private List<String> claimIds = new ArrayList<>();
 
-    // 기존 생성자를 유지하면서 새로운 생성자 추가
+
     public Customer(String fullName, boolean isPolicyHolder) {
         this.fullName = fullName;
         this.isPolicyHolder = isPolicyHolder;

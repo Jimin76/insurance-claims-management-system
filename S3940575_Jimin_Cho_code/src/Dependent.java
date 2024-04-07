@@ -2,15 +2,20 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.ArrayList;
 
+/**
+ * @author <Jimin Cho - s3940575>
+ */
+
+
 public class Dependent implements Serializable {
     private String id;
     private String fullName;
     private String policyOwnerId;
     private String relationship;
-    private String insuranceCardId; // 추가된 필드: 인슈어런스 카드 ID
+    private String insuranceCardId;
     private List<String> claimIds = new ArrayList<>();
 
-    // 생성자
+
     public Dependent(String id, String fullName, String policyOwnerId, String relationship) {
         this.id = id;
         this.fullName = fullName;
@@ -53,11 +58,11 @@ public class Dependent implements Serializable {
 
     public String getInsuranceCardId() {
         return insuranceCardId;
-    } // 인슈어런스 카드 ID에 대한 getter
+    }
 
     public void setInsuranceCardId(String insuranceCardId) {
         this.insuranceCardId = insuranceCardId;
-    } // 인슈어런스 카드 ID에 대한 setter
+    }
 
     public List<String> getClaimIds() {
         return claimIds;
@@ -79,7 +84,7 @@ public class Dependent implements Serializable {
                 ", policyOwnerId='" + policyOwnerId + '\'' +
                 ", relationship='" + relationship + '\'' +
                 ", insuranceCardId='" + insuranceCardId + '\'' +
-                ", claimIds=" + claimIds + // claimIds 리스트를 출력하도록 추가
+                ", claimIds=" + claimIds +
                 '}';
     }
 }

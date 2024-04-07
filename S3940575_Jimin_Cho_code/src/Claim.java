@@ -3,6 +3,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * @author <Jimin Cho - s3940575>
+ */
 public class Claim implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -102,7 +105,6 @@ public class Claim implements Serializable {
         return insuredPersonId;
     }
 
-    // insuredPersonId 필드에 대한 setter 메소드도 구현해야 할 수 있습니다.
     public void setInsuredPersonId(String insuredPersonId) {
         this.insuredPersonId = insuredPersonId;
     }

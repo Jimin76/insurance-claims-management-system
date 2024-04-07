@@ -1,20 +1,24 @@
 import java.io.Serializable;
 import java.util.Date;
 
+/**
+ * @author <Jimin Cho - s3940575>
+ */
+
 public class InsuranceCard implements Serializable {
     private String cardNumber;
     private String cardHolderId;
     private String policyOwnerId;
     private Date expirationDate;
-    private String cardHolderName; // 카드 소유자 이름을 저장할 필드 추가
+    private String cardHolderName;
 
-    // 생성자 수정: cardHolderName 인자 추가
+
     public InsuranceCard(String cardNumber, String cardHolderId, String policyOwnerId, Date expirationDate, String cardHolderName) {
         this.cardNumber = cardNumber;
         this.cardHolderId = cardHolderId;
         this.policyOwnerId = policyOwnerId;
         this.expirationDate = expirationDate;
-        this.cardHolderName = cardHolderName; // 인자 값을 클래스 변수에 할당
+        this.cardHolderName = cardHolderName;
     }
 
     // Getters and Setters
